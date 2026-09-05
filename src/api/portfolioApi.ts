@@ -26,3 +26,11 @@ export const getPrice = async (asset: string): Promise<number> => {
   const res = await axios.get(`${API_BASE}/prices/${asset}`);
   return res.data.price;
 };
+
+axios.interceptors.request.use((config) => {
+  const token = localStorage.getItem("access_token");
+  if (token) {
+    config.headers.Authorization = `Bearer ${token}`;
+  }
+  return config;
+});
