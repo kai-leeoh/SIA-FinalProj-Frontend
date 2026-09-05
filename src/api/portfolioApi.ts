@@ -1,7 +1,7 @@
 import axios from "axios";
 import type { Holding, EnrichedHolding, HoldingFormValues } from "../types/portfolio";
 
-const API_BASE = "http://localhost:4000";
+const API_BASE = "https://sia-finalproj-backend.onrender.com";
 
 export const getEnrichedHoldings = async (): Promise<EnrichedHolding[]> => {
   const res = await axios.get(`${API_BASE}/holdings/enriched`);
