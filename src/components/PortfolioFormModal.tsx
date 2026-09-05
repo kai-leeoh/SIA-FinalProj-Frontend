@@ -38,23 +38,23 @@ export const PortfolioFormModal = ({ open, editingHolding, onCancel, onSubmit }:
     }
   };
 
-  const handleAssetChange = async (value: string) => {
-    const selected = ASSET_OPTIONS.find((a) => a.value === value);
-    if (selected) {
-      form.setFieldValue("type", selected.type);
-    }
-    setPriceLoading(true);
-    try {
-      const price = await getPrice(value);
-      setLivePrice(price);
-      recalculateCostBasis(price, form.getFieldValue("quantity"));
-    } catch {
-      setLivePrice(null);
-    } finally {
-      setPriceLoading(false);
-    }
-  };
-
+const handleAssetChange = async (value: string) => {
+  const selected = ASSET_OPTIONS.find((a) => a.value === value);
+  if (selected) {
+    form.setFieldValue("type", selected.type);
+  }
+  setPriceLoading(true);
+  try {
+    const price = await getPrice(value);
+    setLivePrice(price);
+    recalculateCostBasis(price, form.getFieldValue("quantity"));
+  } catch (error) {
+    console.error("getPrice failed:", error);   // ← temporary debug line
+    setLivePrice(null);
+  } finally {
+    setPriceLoading(false);
+  }
+};
   const handleQuantityChange = (value: number | null) => {
     recalculateCostBasis(livePrice, value);
   };
@@ -99,7 +99,7 @@ export const PortfolioFormModal = ({ open, editingHolding, onCancel, onSubmit }:
           label={livePrice != null ? `Cost Basis ($) — auto-filled at $${livePrice}` : "Cost Basis ($)"}
           rules={[{ required: true, type: "number" }]}
         >
-          <InputNumber style={{ width: "100%" }} min={0} step={0.01} />
+          <InputNumber style={{ width: "100%" }} min={0} step={0.01} disabled />
         </Form.Item>
       </Form>
     </Modal>
