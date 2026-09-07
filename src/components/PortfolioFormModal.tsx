@@ -1,14 +1,7 @@
+import { Form, InputNumber, Modal, Select, Spin } from "antd";
 import { useEffect, useState } from "react";
-import { Modal, Form, InputNumber, Select } from "antd";
+import { getPrice, searchAssets, type AssetSearchResult } from "../api/portfolioApi";
 import type { EnrichedHolding, HoldingFormValues } from "../types/portfolio";
-import { getPrice } from "../api/portfolioApi";
-
-const ASSET_OPTIONS = [
-  { value: "BTC", label: "Bitcoin (BTC)", type: "crypto" },
-  { value: "ETH", label: "Ethereum (ETH)", type: "crypto" },
-  { value: "VTI", label: "Vanguard Total Stock Market (VTI)", type: "etf" },
-  { value: "VXUS", label: "Vanguard Total International Stock (VXUS)", type: "etf" },
-] as const;
 
 interface Props {
   open: boolean;
@@ -20,6 +13,9 @@ interface Props {
 export const PortfolioFormModal = ({ open, editingHolding, onCancel, onSubmit }: Props) => {
   const [form] = Form.useForm<HoldingFormValues>();
   const [livePrice, setLivePrice] = useState<number | null>(null);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [searchResults, setSearchResults] = useState<AssetSearchResult[]>([]);
+  const [searching, setSearching] = useState(false);
   const [priceLoading, setPriceLoading] = useState(false);
 
   useEffect(() => {
@@ -32,29 +28,52 @@ export const PortfolioFormModal = ({ open, editingHolding, onCancel, onSubmit }:
     }
   }, [editingHolding, form]);
 
+  // Debounced search as the user types
+  useEffect(() => {
+    if (!searchQuery) {
+      setSearchResults([]);
+      return;
+    }
+    let active = true;
+    setSearching(true);
+    const handler = setTimeout(async () => {
+      try {
+        const results = await searchAssets(searchQuery);
+        if (active) setSearchResults(results);
+      } finally {
+        if (active) setSearching(false);
+      }
+    }, 400);
+
+    return () => {
+      active = false;
+      clearTimeout(handler);
+    };
+  }, [searchQuery]);
+
   const recalculateCostBasis = (price: number | null, quantity: number | null) => {
     if (price != null && quantity != null) {
       form.setFieldValue("cost_basis", Number((price * quantity).toFixed(2)));
     }
   };
 
-const handleAssetChange = async (value: string) => {
-  const selected = ASSET_OPTIONS.find((a) => a.value === value);
-  if (selected) {
+  const handleAssetChange = async (value: string) => {
+    const selected = searchResults.find((r) => r.value === value);
+    if (!selected) return;
+
     form.setFieldValue("type", selected.type);
-  }
-  setPriceLoading(true);
-  try {
-    const price = await getPrice(value);
-    setLivePrice(price);
-    recalculateCostBasis(price, form.getFieldValue("quantity"));
-  } catch (error) {
-    console.error("getPrice failed:", error);   // ← temporary debug line
-    setLivePrice(null);
-  } finally {
-    setPriceLoading(false);
-  }
-};
+    setPriceLoading(true);
+    try {
+      const price = await getPrice(selected.type, value);
+      setLivePrice(price);
+      recalculateCostBasis(price, form.getFieldValue("quantity"));
+    } catch {
+      setLivePrice(null);
+    } finally {
+      setPriceLoading(false);
+    }
+  };
+
   const handleQuantityChange = (value: number | null) => {
     recalculateCostBasis(livePrice, value);
   };
@@ -64,6 +83,8 @@ const handleAssetChange = async (value: string) => {
     await onSubmit(values);
     form.resetFields();
     setLivePrice(null);
+    setSearchResults([]);
+    setSearchQuery("");
   };
 
   return (
@@ -75,12 +96,16 @@ const handleAssetChange = async (value: string) => {
       okText={editingHolding ? "Save" : "Add"}
     >
       <Form form={form} layout="vertical">
-        <Form.Item name="asset" label="Asset" rules={[{ required: true, message: "Select an asset" }]}>
+        <Form.Item name="asset" label="Asset" rules={[{ required: true, message: "Search and select an asset" }]}>
           <Select
-            placeholder="Select a coin or ETF"
-            options={ASSET_OPTIONS.map(({ value, label }) => ({ value, label }))}
-            onChange={handleAssetChange}
+            showSearch
+            placeholder="Search stocks or crypto (e.g. bitcoin, AAPL)"
+            filterOption={false}
             loading={priceLoading}
+            onSearch={setSearchQuery}
+            onChange={handleAssetChange}
+            notFoundContent={searching ? <Spin size="small" /> : "No results"}
+            options={searchResults.map((r) => ({ value: r.value, label: r.label }))}
           />
         </Form.Item>
         <Form.Item name="type" hidden>
@@ -96,10 +121,10 @@ const handleAssetChange = async (value: string) => {
         </Form.Item>
         <Form.Item
           name="cost_basis"
-          label={livePrice != null ? `Cost Basis ($) — auto-filled at $${livePrice}` : "Cost Basis ($)"}
+          label={livePrice != null ? `Cost Basis ($) — calculated at $${livePrice}` : "Cost Basis ($) — price unavailable, enter manually"}
           rules={[{ required: true, type: "number" }]}
         >
-          <InputNumber style={{ width: "100%" }} min={0} step={0.01} disabled />
+          <InputNumber style={{ width: "100%" }} min={0} step={0.01} disabled={livePrice != null} />
         </Form.Item>
       </Form>
     </Modal>

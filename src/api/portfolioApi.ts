@@ -1,5 +1,5 @@
 import axios from "axios";
-import type { Holding, EnrichedHolding, HoldingFormValues } from "../types/portfolio";
+import type { EnrichedHolding, Holding, HoldingFormValues } from "../types/portfolio";
 
 const API_BASE = "https://sia-finalproj-backend.onrender.com";
 
@@ -22,9 +22,21 @@ export const deleteHolding = async (id: number): Promise<void> => {
   await axios.delete(`${API_BASE}/holdings/${id}`);
 };
 
-export const getPrice = async (asset: string): Promise<number> => {
-  const res = await axios.get(`${API_BASE}/prices/${asset}`);
+export const getPrice = async (assetType: string, asset: string): Promise<number> => {
+  const res = await axios.get(`${API_BASE}/prices/${assetType}/${asset}`);
   return res.data.price;
+};
+
+export interface AssetSearchResult {
+  value: string;
+  label: string;
+  type: "crypto" | "etf";
+}
+
+export const searchAssets = async (query: string): Promise<AssetSearchResult[]> => {
+  if (!query || query.length < 1) return [];
+  const res = await axios.get(`${API_BASE}/search`, { params: { query } });
+  return res.data;
 };
 
 axios.interceptors.request.use((config) => {

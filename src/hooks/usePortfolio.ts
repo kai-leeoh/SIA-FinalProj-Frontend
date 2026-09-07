@@ -1,6 +1,8 @@
-import { useState, useEffect, useCallback } from "react";
-import type { EnrichedHolding, HoldingFormValues } from "../types/portfolio";
+import { useCallback, useEffect, useState } from "react";
 import * as api from "../api/portfolioApi";
+import type { EnrichedHolding, HoldingFormValues } from "../types/portfolio";
+
+const POLL_INTERVAL_MS = 30000; // 30 seconds
 
 export const usePortfolio = () => {
   const [holdings, setHoldings] = useState<EnrichedHolding[]>([]);
@@ -18,6 +20,8 @@ export const usePortfolio = () => {
 
   useEffect(() => {
     fetchHoldings();
+    const interval = setInterval(fetchHoldings, POLL_INTERVAL_MS);
+    return () => clearInterval(interval);
   }, [fetchHoldings]);
 
   const addHolding = async (values: HoldingFormValues) => {

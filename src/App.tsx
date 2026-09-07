@@ -1,12 +1,13 @@
-import { useState } from "react";
-import { Button } from "antd";
 import { LogoutOutlined } from "@ant-design/icons";
-import { AuthProvider, useAuth } from "./context/AuthContext";
+import { Button } from "antd";
+import { useState } from "react";
 import { AuthPage } from "./components/AuthPage";
-import { usePortfolio } from "./hooks/usePortfolio";
+import { GainLossChart } from "./components/GainLossChart";
+import { PortfolioFormModal } from "./components/PortfolioFormModal";
 import { PortfolioHeader } from "./components/PortfolioHeader";
 import { PortfolioTable } from "./components/PortfolioTable";
-import { PortfolioFormModal } from "./components/PortfolioFormModal";
+import { AuthProvider, useAuth } from "./context/AuthContext";
+import { usePortfolio } from "./hooks/usePortfolio";
 import type { EnrichedHolding, HoldingFormValues } from "./types/portfolio";
 
 function PortfolioApp() {
@@ -42,6 +43,7 @@ function PortfolioApp() {
         </Button>
       </div>
       <PortfolioHeader holdings={holdings} onAddClick={handleAddClick} />
+      <GainLossChart holdings={holdings} />
       <PortfolioTable
         holdings={holdings}
         loading={loading}
