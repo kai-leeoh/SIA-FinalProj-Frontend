@@ -19,24 +19,28 @@ export const PortfolioTable = ({ holdings, loading, onEdit, onDelete }: Props) =
       key: "type",
       render: (type: string) => <Tag color={type === "crypto" ? "gold" : "blue"}>{type}</Tag>,
     },
-    { title: "Quantity", dataIndex: "quantity", key: "quantity" },
+   { title: "Quantity", dataIndex: "quantity", key: "quantity", render: (v: number) => <span className="mono">{v}</span> },
     {
       title: "Cost Basis",
       dataIndex: "cost_basis",
       key: "cost_basis",
-      render: (v: number) => `$${v.toFixed(2)}`,
+      render: (v: number) => <span className="mono">${v.toFixed(2)}</span>,
     },
     {
       title: "Current Price",
       dataIndex: "current_price",
       key: "current_price",
-      render: (v: number | null) => (v != null ? `$${v.toFixed(2)}` : "—"),
+      render: (v: number | null) => (
+        <span className="mono">{v != null ? `$${v.toFixed(2)}` : "—"}</span>
+      ),
     },
     {
       title: "Current Value",
       dataIndex: "current_value",
       key: "current_value",
-      render: (v: number | null) => (v != null ? `$${v.toFixed(2)}` : "—"),
+      render: (v: number | null) => (
+        <span className="mono">{v != null ? `$${v.toFixed(2)}` : "—"}</span>
+      ),
     },
     {
       title: "Gain / Loss",
@@ -44,7 +48,7 @@ export const PortfolioTable = ({ holdings, loading, onEdit, onDelete }: Props) =
       key: "gain_loss",
       render: (v: number | null) =>
         v != null ? (
-          <span style={{ color: v >= 0 ? "#3f8600" : "#cf1322" }}>
+          <span className="mono" style={{ color: v >= 0 ? "#2F6E4F" : "#B3492F" }}>
             {v >= 0 ? "+" : ""}${v.toFixed(2)}
           </span>
         ) : (

@@ -34,10 +34,21 @@ export const AuthPage = () => {
         justifyContent: "center",
         alignItems: "center",
         minHeight: "100vh",
+        background: "#F7F6F3",
       }}
     >
-      <Card style={{ width: 360 }}>
-        <Title level={3} style={{ textAlign: "center" }}>
+      <Card
+        style={{
+          width: 360,
+          border: "1px solid #DDD8CE",
+          boxShadow: "none",
+        }}
+      >
+        <Title
+          level={3}
+          className="serif-title"
+          style={{ textAlign: "center", marginBottom: 24 }}
+        >
           Portfolio Tracker
         </Title>
         <Segmented

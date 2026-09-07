@@ -16,18 +16,33 @@ export const PortfolioHeader = ({ holdings, onAddClick }: Props) => {
   return (
     <Row justify="space-between" align="middle" style={{ marginBottom: 24 }}>
       <Col>
-        <Title level={3} style={{ margin: 0 }}>Portfolio Tracker</Title>
+        <Title level={3} className="serif-title" style={{ margin: 0 }}>
+  Portfolio Tracker
+</Title>
       </Col>
       <Col>
         <Row gutter={32} align="middle">
-          <Col><Statistic title="Total Value" value={totalValue} precision={2} prefix="$" /></Col>
+          <Col>
+            <Statistic
+              title="Total Value"
+              value={totalValue}
+              precision={2}
+              prefix="$"
+              styles={{ content: { fontFamily: "'JetBrains Mono', monospace" } }}
+            />
+          </Col>
           <Col>
             <Statistic
               title="Gain / Loss"
               value={totalGainLoss}
               precision={2}
               prefix="$"
-              valueStyle={{ color: totalGainLoss >= 0 ? "#3f8600" : "#cf1322" }}
+              styles={{
+                content: {
+                  fontFamily: "'JetBrains Mono', monospace",
+                  color: totalGainLoss >= 0 ? "#2F6E4F" : "#B3492F",
+                },
+              }}
             />
           </Col>
           <Col>
