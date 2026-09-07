@@ -1,7 +1,8 @@
+import { GoogleLogin } from "@react-oauth/google";
+import { Button, Card, Form, Input, message, Segmented, Typography } from "antd";
 import { useState } from "react";
-import { Card, Form, Input, Button, Typography, message, Segmented } from "antd";
+import { googleLogin, login, signup } from "../api/authApi";
 import { useAuth } from "../context/AuthContext";
-import { login, signup } from "../api/authApi";
 
 const { Title } = Typography;
 
@@ -22,6 +23,19 @@ export const AuthPage = () => {
     } catch (err: any) {
       const detail = err?.response?.data?.detail;
       message.error(detail || "Something went wrong. Please try again.");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleGoogleSuccess = async (credentialResponse: any) => {
+    if (!credentialResponse.credential) return;
+    setLoading(true);
+    try {
+      const token = await googleLogin(credentialResponse.credential);
+      setToken(token);
+    } catch {
+      message.error("Google sign-in failed. Please try again.");
     } finally {
       setLoading(false);
     }
@@ -82,6 +96,13 @@ export const AuthPage = () => {
             </Button>
           </Form.Item>
         </Form>
+        <div style={{ textAlign: "center", margin: "16px 0", color: "#999" }}>or</div>
+        <div style={{ display: "flex", justifyContent: "center" }}>
+          <GoogleLogin
+            onSuccess={handleGoogleSuccess}
+            onError={() => message.error("Google sign-in failed.")}
+          />
+        </div>
       </Card>
     </div>
   );

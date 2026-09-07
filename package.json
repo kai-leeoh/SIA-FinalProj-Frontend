@@ -11,6 +11,7 @@
   },
   "dependencies": {
     "@neondatabase/neon-js": "^0.7.0-beta",
+    "@react-oauth/google": "^0.13.5",
     "antd": "^6.6.2",
     "axios": "^1.20.0",
     "react": "^18.3.1",

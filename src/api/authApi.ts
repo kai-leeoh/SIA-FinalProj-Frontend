@@ -7,6 +7,11 @@ export const signup = async (email: string, password: string): Promise<string> =
   return res.data.access_token;
 };
 
+export const googleLogin = async (credential: string): Promise<string> => {
+  const res = await axios.post(`${API_BASE}/auth/google`, { credential });
+  return res.data.access_token;
+};
+
 export const login = async (email: string, password: string): Promise<string> => {
   const params = new URLSearchParams();
   params.append("username", email);
