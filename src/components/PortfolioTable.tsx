@@ -1,16 +1,24 @@
 import { DeleteOutlined, EditOutlined } from "@ant-design/icons";
-import { Button, Space, Table, Tag } from "antd";
+import { Button, Popconfirm, Space, Table, Tag } from "antd";
 import type { ColumnsType } from "antd/es/table";
+import type { Currency } from "../hooks/useExchangeRates";
 import type { EnrichedHolding } from "../types/portfolio";
+import { CURRENCY_SYMBOLS } from "../utils/currency";
 
 interface Props {
   holdings: EnrichedHolding[];
   loading: boolean;
   onEdit: (holding: EnrichedHolding) => void;
   onDelete: (id: number) => void;
+  currency: Currency;
+  convert: (usdAmount: number, currency: Currency) => number;
 }
 
-export const PortfolioTable = ({ holdings, loading, onEdit, onDelete }: Props) => {
+export const PortfolioTable = ({ holdings, loading, onEdit, onDelete, currency, convert }: Props) => {
+  const symbol = CURRENCY_SYMBOLS[currency] ?? currency;
+  const fmt = (v: number | null) =>
+    v != null ? `${symbol}${convert(v, currency).toFixed(2)}` : "—";
+
   const columns: ColumnsType<EnrichedHolding> = [
     { title: "Asset", dataIndex: "asset", key: "asset" },
     {
@@ -19,28 +27,24 @@ export const PortfolioTable = ({ holdings, loading, onEdit, onDelete }: Props) =
       key: "type",
       render: (type: string) => <Tag color={type === "crypto" ? "gold" : "blue"}>{type}</Tag>,
     },
-   { title: "Quantity", dataIndex: "quantity", key: "quantity", render: (v: number) => <span className="mono">{v}</span> },
+    { title: "Quantity", dataIndex: "quantity", key: "quantity", render: (v: number) => <span className="mono">{v}</span> },
     {
       title: "Cost Basis",
       dataIndex: "cost_basis",
       key: "cost_basis",
-      render: (v: number) => <span className="mono">${v.toFixed(2)}</span>,
+      render: (v: number) => <span className="mono">{fmt(v)}</span>,
     },
     {
       title: "Current Price",
       dataIndex: "current_price",
       key: "current_price",
-      render: (v: number | null) => (
-        <span className="mono">{v != null ? `$${v.toFixed(2)}` : "—"}</span>
-      ),
+      render: (v: number | null) => <span className="mono">{fmt(v)}</span>,
     },
     {
       title: "Current Value",
       dataIndex: "current_value",
       key: "current_value",
-      render: (v: number | null) => (
-        <span className="mono">{v != null ? `$${v.toFixed(2)}` : "—"}</span>
-      ),
+      render: (v: number | null) => <span className="mono">{fmt(v)}</span>,
     },
     {
       title: "Gain / Loss",
@@ -49,7 +53,7 @@ export const PortfolioTable = ({ holdings, loading, onEdit, onDelete }: Props) =
       render: (v: number | null) =>
         v != null ? (
           <span className="mono" style={{ color: v >= 0 ? "#2F6E4F" : "#B3492F" }}>
-            {v >= 0 ? "+" : ""}${v.toFixed(2)}
+            {v >= 0 ? "+" : ""}{fmt(v)}
           </span>
         ) : (
           "—"
@@ -61,7 +65,15 @@ export const PortfolioTable = ({ holdings, loading, onEdit, onDelete }: Props) =
       render: (_, record) => (
         <Space>
           <Button icon={<EditOutlined />} onClick={() => onEdit(record)} />
-          <Button icon={<DeleteOutlined />} danger onClick={() => onDelete(record.id)} />
+          <Popconfirm
+            title="Delete this holding?"
+            description="This can't be undone."
+            okText="Delete"
+            okButtonProps={{ danger: true }}
+            onConfirm={() => onDelete(record.id)}
+          >
+            <Button icon={<DeleteOutlined />} danger />
+          </Popconfirm>
         </Space>
       ),
     },

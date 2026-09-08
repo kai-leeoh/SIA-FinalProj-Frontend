@@ -16,9 +16,13 @@ export const login = async (email: string, password: string): Promise<string> =>
   const params = new URLSearchParams();
   params.append("username", email);
   params.append("password", password);
-
   const res = await axios.post(`${API_BASE}/auth/login`, params, {
     headers: { "Content-Type": "application/x-www-form-urlencoded" },
   });
   return res.data.access_token;
+};
+
+export const getCurrentUser = async (): Promise<{ email: string }> => {
+  const res = await axios.get(`${API_BASE}/auth/me`);
+  return res.data;
 };

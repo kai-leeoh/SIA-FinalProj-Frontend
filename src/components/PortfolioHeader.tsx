@@ -1,29 +1,27 @@
 import { PlusOutlined } from "@ant-design/icons";
 import { Button, Col, Row, Select, Statistic, Typography } from "antd";
-import { useState } from "react";
-import { useExchangeRates } from "../hooks/useExchangeRates";
+import type { Currency } from "../hooks/useExchangeRates";
 import type { EnrichedHolding } from "../types/portfolio";
-
+import { CURRENCY_SYMBOLS } from "../utils/currency";
 const { Title } = Typography;
 
 interface Props {
   holdings: EnrichedHolding[];
   onAddClick: () => void;
+  currency: Currency;
+  onCurrencyChange: (currency: Currency) => void;
+  currencies: readonly Currency[];
+  convert: (usdAmount: number, currency: Currency) => number;
+  loading: boolean;
 }
 
-const CURRENCY_SYMBOLS: Record<string, string> = {
-  USD: "$", PHP: "₱", EUR: "€", JPY: "¥", GBP: "£", SGD: "S$",
-};
-
-export const PortfolioHeader = ({ holdings, onAddClick }: Props) => {
-  const { convert, currencies, loading } = useExchangeRates();
-  const [currency, setCurrency] = useState<string>("USD");
-
+export const PortfolioHeader = ({
+  holdings, onAddClick, currency, onCurrencyChange, currencies, convert, loading,
+}: Props) => {
   const totalValueUSD = holdings.reduce((sum, h) => sum + (h.current_value ?? 0), 0);
   const totalGainLossUSD = holdings.reduce((sum, h) => sum + (h.gain_loss ?? 0), 0);
-
-  const totalValue = convert(totalValueUSD, currency as any);
-  const totalGainLoss = convert(totalGainLossUSD, currency as any);
+  const totalValue = convert(totalValueUSD, currency);
+  const totalGainLoss = convert(totalGainLossUSD, currency);
 
   return (
     <Row justify="space-between" align="middle" style={{ marginBottom: 24 }}>
@@ -37,7 +35,7 @@ export const PortfolioHeader = ({ holdings, onAddClick }: Props) => {
           <Col>
             <Select
               value={currency}
-              onChange={setCurrency}
+              onChange={onCurrencyChange}
               loading={loading}
               style={{ width: 90 }}
               options={currencies.map((c) => ({ value: c, label: c }))}
