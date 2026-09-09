@@ -70,7 +70,7 @@ export const AllocationChart = ({ holdings, currency, convert }: Props) => {
                         <LabelList
                             dataKey="value"
                             position="top"
-                            formatter={(value: string | number | undefined) => {
+                            formatter={(value: any) => {
                                 const num = typeof value === "number" ? value : Number(value);
                                 return Number.isFinite(num) ? `${symbol}${num.toFixed(2)}` : "";
                             }}
