@@ -24,33 +24,33 @@ export const PortfolioHeader = ({
   const totalGainLoss = convert(totalGainLossUSD, currency);
 
   return (
-    <Row justify="space-between" align="middle" style={{ marginBottom: 24 }}>
-      <Col>
+    <Row justify="space-between" align="middle" gutter={[0, 16]} style={{ marginBottom: 24 }}>
+      <Col xs={24} sm="auto">
         <Title level={3} className="serif-title" style={{ margin: 0 }}>
           Portfolio Tracker
         </Title>
       </Col>
-      <Col>
-        <Row gutter={24} align="middle">
-          <Col>
+      <Col xs={24} sm="auto">
+        <Row gutter={[16, 12]} align="middle" wrap>
+          <Col xs={8} sm="auto">
             <Select
               value={currency}
               onChange={onCurrencyChange}
               loading={loading}
-              style={{ width: 90 }}
+              style={{ width: "100%" }}
               options={currencies.map((c) => ({ value: c, label: c }))}
             />
           </Col>
-          <Col>
+          <Col xs={16} sm="auto">
             <Statistic
               title="Total Value"
               value={totalValue}
               precision={2}
               prefix={CURRENCY_SYMBOLS[currency] ?? currency}
-              styles={{ content: { fontFamily: "'JetBrains Mono', monospace" } }}
+              styles={{ content: { fontFamily: "'JetBrains Mono', monospace", fontSize: 18 } }}
             />
           </Col>
-          <Col>
+          <Col xs={16} sm="auto">
             <Statistic
               title="Gain / Loss"
               value={totalGainLoss}
@@ -59,13 +59,14 @@ export const PortfolioHeader = ({
               styles={{
                 content: {
                   fontFamily: "'JetBrains Mono', monospace",
+                  fontSize: 18,
                   color: totalGainLoss >= 0 ? "#2F6E4F" : "#B3492F",
                 },
               }}
             />
           </Col>
-          <Col>
-            <Button type="primary" icon={<PlusOutlined />} onClick={onAddClick}>
+          <Col xs={24} sm="auto">
+            <Button type="primary" icon={<PlusOutlined />} onClick={onAddClick} block>
               Add Holding
             </Button>
           </Col>
