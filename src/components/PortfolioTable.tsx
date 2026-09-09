@@ -79,5 +79,16 @@ export const PortfolioTable = ({ holdings, loading, onEdit, onDelete, currency, 
     },
   ];
 
-  return <Table rowKey="id" columns={columns} dataSource={holdings} loading={loading} />;
+  return (
+    <div style={{ width: "100%", overflowX: "auto" }}>
+      <Table
+        rowKey="id"
+        columns={columns}
+        dataSource={holdings}
+        loading={loading}
+        scroll={{ x: 700 }}
+        pagination={{ pageSize: 10, simple: true }}
+      />
+    </div>
+  );
 };
