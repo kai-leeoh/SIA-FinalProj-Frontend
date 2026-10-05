@@ -47,8 +47,10 @@ export const GainLossChart = ({ holdings, currency, convert }: Props) => {
           <CartesianGrid strokeDasharray="3 3" stroke="#DDD8CE" />
           <XAxis dataKey="time" tick={{ fontSize: 11, fontFamily: "JetBrains Mono" }} />
           <YAxis
+            width={80}
             tick={{ fontSize: 11, fontFamily: "JetBrains Mono" }}
-            tickFormatter={(v) => `${symbol}${v.toFixed(0)}`}
+            tickFormatter={(v) => `${symbol}${v.toFixed(2)}`}
+            domain={["auto", "auto"]}
           />
           <Tooltip
             formatter={(value) => {
