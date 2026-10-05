@@ -76,7 +76,7 @@ function PortfolioApp() {
         convert={convert}
         loading={ratesLoading}
       />
-      <GainLossChart holdings={holdings} />
+      <GainLossChart holdings={holdings} currency={currency} convert={convert} />
       <AllocationChart holdings={holdings} currency={currency} convert={convert} />
       <PortfolioTable
         holdings={holdings}
