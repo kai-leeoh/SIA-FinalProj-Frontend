@@ -11,3 +11,55 @@ body {
   font-family: 'JetBrains Mono', 'SF Mono', Consolas, monospace;
   font-variant-numeric: tabular-nums;
 }
+
+.print-only {
+  display: none;
+}
+
+@media print {
+  @page {
+    margin: 14mm;
+  }
+
+  body {
+    background: #fff;
+  }
+
+  * {
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+
+  .no-print {
+    display: none !important;
+  }
+
+  .print-only {
+    display: block;
+  }
+
+  .report-header {
+    margin-bottom: 16px;
+    padding-bottom: 8px;
+    border-bottom: 1px solid #DDD8CE;
+  }
+
+  .report-header h1 {
+    margin: 0 0 4px;
+    font-size: 22px;
+  }
+
+  .report-header p {
+    margin: 2px 0;
+    font-size: 12px;
+  }
+
+  .ant-card {
+    break-inside: avoid;
+  }
+
+  .ant-table-wrapper,
+  .ant-table-content {
+    overflow: visible !important;
+  }
+}

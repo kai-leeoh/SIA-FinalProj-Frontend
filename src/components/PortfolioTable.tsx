@@ -12,9 +12,10 @@ interface Props {
   onDelete: (id: number) => void;
   currency: Currency;
   convert: (usdAmount: number, currency: Currency) => number;
+  printing?: boolean;
 }
 
-export const PortfolioTable = ({ holdings, loading, onEdit, onDelete, currency, convert }: Props) => {
+export const PortfolioTable = ({ holdings, loading, onEdit, onDelete, currency, convert, printing }: Props) => {
   const symbol = CURRENCY_SYMBOLS[currency] ?? currency;
   const fmt = (v: number | null) =>
     v != null ? `${symbol}${convert(v, currency).toFixed(2)}` : "—";
@@ -62,6 +63,7 @@ export const PortfolioTable = ({ holdings, loading, onEdit, onDelete, currency, 
     {
       title: "Actions",
       key: "actions",
+      className: "no-print",
       render: (_, record) => (
         <Space>
           <Button icon={<EditOutlined />} onClick={() => onEdit(record)} />
@@ -80,14 +82,14 @@ export const PortfolioTable = ({ holdings, loading, onEdit, onDelete, currency, 
   ];
 
   return (
-    <div style={{ width: "100%", overflowX: "auto" }}>
+    <div style={{ width: "100%", overflowX: printing ? "visible" : "auto" }}>
       <Table
         rowKey="id"
         columns={columns}
         dataSource={holdings}
         loading={loading}
-        scroll={{ x: 700 }}
-        pagination={{ pageSize: 10, simple: true }}
+        scroll={printing ? undefined : { x: 700 }}
+        pagination={printing ? false : { pageSize: 10, simple: true }}
       />
     </div>
   );
