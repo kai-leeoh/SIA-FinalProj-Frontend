@@ -1,4 +1,5 @@
-import { Form, InputNumber, Modal, Select, Spin } from "antd";
+import { DatePicker, Form, InputNumber, Modal, Select, Spin } from "antd";
+import dayjs from "dayjs";
 import { useEffect, useState } from "react";
 import { getPrice, searchAssets, type AssetSearchResult } from "../api/portfolioApi";
 import type { EnrichedHolding, HoldingFormValues } from "../types/portfolio";
@@ -11,7 +12,7 @@ interface Props {
 }
 
 export const PortfolioFormModal = ({ open, editingHolding, onCancel, onSubmit }: Props) => {
-  const [form] = Form.useForm<HoldingFormValues>();
+  const [form] = Form.useForm();
   const [livePrice, setLivePrice] = useState<number | null>(null);
   const [searchQuery, setSearchQuery] = useState("");
   const [searchResults, setSearchResults] = useState<AssetSearchResult[]>([]);
@@ -20,7 +21,10 @@ export const PortfolioFormModal = ({ open, editingHolding, onCancel, onSubmit }:
 
   useEffect(() => {
     if (editingHolding) {
-      form.setFieldsValue(editingHolding);
+      form.setFieldsValue({
+        ...editingHolding,
+        purchase_date: editingHolding.purchase_date ? dayjs(editingHolding.purchase_date) : null,
+      });
       setLivePrice(editingHolding.current_price);
     } else {
       form.resetFields();
@@ -80,7 +84,10 @@ export const PortfolioFormModal = ({ open, editingHolding, onCancel, onSubmit }:
 
   const handleOk = async () => {
     const values = await form.validateFields();
-    await onSubmit(values);
+    await onSubmit({
+      ...values,
+      purchase_date: values.purchase_date ? values.purchase_date.format("YYYY-MM-DD") : null,
+    });
     form.resetFields();
     setLivePrice(null);
     setSearchResults([]);
@@ -95,7 +102,7 @@ export const PortfolioFormModal = ({ open, editingHolding, onCancel, onSubmit }:
       onCancel={onCancel}
       okText={editingHolding ? "Save" : "Add"}
     >
-      <Form form={form} layout="vertical">
+      <Form form={form} layout="vertical" initialValues={{ purchase_date: dayjs() }}>
         <Form.Item name="asset" label="Asset" rules={[{ required: true, message: "Search and select an asset" }]}>
           <Select
             showSearch
@@ -118,6 +125,9 @@ export const PortfolioFormModal = ({ open, editingHolding, onCancel, onSubmit }:
             step={0.0001}
             onChange={handleQuantityChange}
           />
+        </Form.Item>
+        <Form.Item name="purchase_date" label="Purchase date">
+          <DatePicker style={{ width: "100%" }} disabledDate={(d) => d.isAfter(dayjs(), "day")} />
         </Form.Item>
         <Form.Item
           name="cost_basis"

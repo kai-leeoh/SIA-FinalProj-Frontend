@@ -28,6 +28,12 @@ export const PortfolioTable = ({ holdings, loading, onEdit, onDelete, currency, 
       key: "type",
       render: (type: string) => <Tag color={type === "crypto" ? "gold" : "blue"}>{type}</Tag>,
     },
+    {
+      title: "Purchased",
+      dataIndex: "purchase_date",
+      key: "purchase_date",
+      render: (v: string | null) => <span className="mono">{v ?? "—"}</span>,
+    },
     { title: "Quantity", dataIndex: "quantity", key: "quantity", render: (v: number) => <span className="mono">{v}</span> },
     {
       title: "Cost Basis",

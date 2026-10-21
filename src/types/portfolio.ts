@@ -4,6 +4,7 @@ export interface Holding {
   type: "crypto" | "etf";
   quantity: number;
   cost_basis: number;
+  purchase_date?: string | null;
 }
 
 export interface EnrichedHolding extends Holding {

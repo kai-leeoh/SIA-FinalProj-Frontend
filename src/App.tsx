@@ -1,8 +1,9 @@
 import { LogoutOutlined, PrinterOutlined, UserOutlined } from "@ant-design/icons";
 import { Avatar, Button, message, Space, Tooltip } from "antd";
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { AllocationChart } from "./components/AllocationChart";
 import { AuthPage } from "./components/AuthPage";
+import { DEFAULT_FILTERS, FilterBar, type Filters } from "./components/FilterBar";
 import { GainLossChart } from "./components/GainLossChart";
 import { PortfolioFormModal } from "./components/PortfolioFormModal";
 import { PortfolioHeader } from "./components/PortfolioHeader";
@@ -20,8 +21,8 @@ function PortfolioApp() {
   const [currency, setCurrency] = useState<Currency>("USD");
   const [modalOpen, setModalOpen] = useState(false);
   const [editingHolding, setEditingHolding] = useState<EnrichedHolding | null>(null);
-
   const [printing, setPrinting] = useState(false);
+  const [filters, setFilters] = useState<Filters>(DEFAULT_FILTERS);
 
   useEffect(() => {
     const done = () => setPrinting(false);
@@ -29,14 +30,57 @@ function PortfolioApp() {
     return () => window.removeEventListener("afterprint", done);
   }, []);
 
+  const filteredHoldings = useMemo(
+    () =>
+      holdings.filter((h) => {
+        if (filters.type !== "all" && h.type !== filters.type) return false;
+        if (
+          filters.search.trim() &&
+          !h.asset.toLowerCase().includes(filters.search.trim().toLowerCase())
+        )
+          return false;
+        if (filters.result === "gain" && !(h.gain_loss != null && h.gain_loss >= 0)) return false;
+        if (filters.result === "loss" && !(h.gain_loss != null && h.gain_loss < 0)) return false;
+        if (filters.dateFrom || filters.dateTo) {
+          if (!h.purchase_date) return false;
+          if (filters.dateFrom && h.purchase_date < filters.dateFrom) return false;
+          if (filters.dateTo && h.purchase_date > filters.dateTo) return false;
+        }
+        return true;
+      }),
+    [holdings, filters]
+  );
+
+  const isFiltered =
+    filters.search !== "" ||
+    filters.type !== "all" ||
+    filters.result !== "all" ||
+    filters.dateFrom !== null ||
+    filters.dateTo !== null;
+  const filterSummary = [
+    (filters.dateFrom || filters.dateTo) &&
+    `Purchased: ${filters.dateFrom ?? "any"} to ${filters.dateTo ?? "any"}`,
+    filters.type !== "all" && `Type: ${filters.type === "etf" ? "Stocks / ETFs" : "Crypto"}`,
+    filters.search.trim() && `Search: "${filters.search.trim()}"`,
+    filters.result !== "all" && `Result: ${filters.result === "gain" ? "Gains only" : "Losses only"}`,
+  ]
+    .filter(Boolean)
+    .join(", ");
+
   const handlePrint = () => {
     setPrinting(true);
     setTimeout(() => window.print(), 300);
   };
 
   const symbol = CURRENCY_SYMBOLS[currency] ?? currency;
-  const totalValue = convert(holdings.reduce((s, h) => s + (h.current_value ?? 0), 0), currency);
-  const totalGainLoss = convert(holdings.reduce((s, h) => s + (h.gain_loss ?? 0), 0), currency);
+  const totalValue = convert(
+    filteredHoldings.reduce((s, h) => s + (h.current_value ?? 0), 0),
+    currency
+  );
+  const totalGainLoss = convert(
+    filteredHoldings.reduce((s, h) => s + (h.gain_loss ?? 0), 0),
+    currency
+  );
 
   const handleAddClick = () => {
     setEditingHolding(null);
@@ -80,6 +124,9 @@ function PortfolioApp() {
           {user?.email} | Generated {new Date().toLocaleString()} | Currency: {currency}
         </p>
         <p>
+          Filters: {filterSummary || "none"} | Showing {filteredHoldings.length} of {holdings.length} holdings
+        </p>
+        <p>
           Total value: {symbol}{totalValue.toFixed(2)} | Gain / Loss: {totalGainLoss >= 0 ? "+" : ""}
           {symbol}{totalGainLoss.toFixed(2)}
         </p>
@@ -105,7 +152,7 @@ function PortfolioApp() {
 
       <div className="no-print">
         <PortfolioHeader
-          holdings={holdings}
+          holdings={filteredHoldings}
           onAddClick={handleAddClick}
           currency={currency}
           onCurrencyChange={setCurrency}
@@ -115,10 +162,14 @@ function PortfolioApp() {
         />
       </div>
 
-      <GainLossChart holdings={holdings} currency={currency} convert={convert} />
-      <AllocationChart holdings={holdings} currency={currency} convert={convert} />
+      <FilterBar filters={filters} onChange={setFilters} />
+
+      <div className={isFiltered ? "no-print" : undefined}>
+        <GainLossChart holdings={holdings} currency={currency} convert={convert} />
+      </div>
+      <AllocationChart holdings={filteredHoldings} currency={currency} convert={convert} />
       <PortfolioTable
-        holdings={holdings}
+        holdings={filteredHoldings}
         loading={loading}
         onEdit={handleEditClick}
         onDelete={handleDelete}
